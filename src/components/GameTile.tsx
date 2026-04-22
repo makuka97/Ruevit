@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { Game } from "../types";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 const SYSTEM_COLORS: Record<string, string> = {
   "NES": "bg-red-500",
@@ -34,16 +37,36 @@ interface Props {
 }
 
 export function GameTile({ game, onClick }: Props) {
+  const [artPath, setArtPath] = useState<string | null>(null);
   const color = SYSTEM_COLORS[game.system] ?? "bg-gray-500";
   const short = SYSTEM_SHORT[game.system] ?? game.system;
+
+  useEffect(() => {
+    invoke<string | null>("fetch_art", {
+      title: game.title,
+      system: game.system,
+    }).then((path) => {
+      if (path) {
+        setArtPath(convertFileSrc(path));
+      }
+    });
+  }, [game.title, game.system]);
 
   return (
     <div
       onClick={() => onClick(game)}
-      className="flex flex-col cursor-pointer group rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition-all hover:shadow-md"
+      className="flex flex-col cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition-all hover:shadow-md"
     >
-      <div className={`${color} w-full aspect-[3/4] flex items-center justify-center`}>
-        <span className="text-white text-2xl font-bold opacity-30">{short}</span>
+      <div className={`${color} w-full aspect-[3/4] flex items-center justify-center overflow-hidden`}>
+        {artPath ? (
+          <img
+            src={artPath}
+            alt={game.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-white text-2xl font-bold opacity-30">{short}</span>
+        )}
       </div>
       <div className="p-2 bg-white">
         <p className="text-xs font-medium text-gray-800 truncate">{game.title}</p>
