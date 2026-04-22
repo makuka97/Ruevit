@@ -6,6 +6,6 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "core:asset:default"
+    "core:image:default"
   ]
 }
