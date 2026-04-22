@@ -1,6 +1,7 @@
 mod scanner;
 mod db;
 mod launcher;
+mod art;
 
 use scanner::ScannedGame;
 use db::Game;
@@ -37,6 +38,11 @@ fn launch_game(
     launcher::launch_game(&retroarch_path, &rom_path, &system)
 }
 
+#[tauri::command]
+fn fetch_art(title: String, system: String) -> Option<String> {
+    art::fetch_art(&title, &system)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     db::init_db().expect("failed to init db");
@@ -47,7 +53,8 @@ pub fn run() {
             scan_roms,
             save_library,
             load_library,
-            launch_game
+            launch_game,
+            fetch_art
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
